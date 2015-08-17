@@ -12,9 +12,9 @@ README            - This file outlining process used
 
 logstash.conf     - The file used to tell logstash how to expect logs to come in, how to deal with the logs and where to send them
 
-run_logstash.sh   - This creates and index in elasticsearch with a predefined mapping to give more control over how the data is stored in elasic
-
+run_logstash.sh   - This creates and index in elasticsearch with a predefined mapping to give more control over how the data is stored in elasicsearch
                     it then runs logstash and assumes that the logstash.conf file is in the same directory
+
 query_elastic.php - The file that contains a class to query the elasticsearch index for the the metrics in the question
 
 grokparsefailures - The file contains a list of log messages which weren't parsed by the grok pattern I used. given more time I would modify the grok pattern
