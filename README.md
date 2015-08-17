@@ -36,9 +36,9 @@ $ brew install logstash
 
 $ brew install elasticsearch && elasticsearch
 
-$ cp <path to access log>  <path to checked out code>
+$ cp path_to_access_log  path_to_checked_out_code
 
-$ cd <path to checked out code>
+$ cd path_to_checked_out_code
 
 $ ./run_logstash.sh
 
