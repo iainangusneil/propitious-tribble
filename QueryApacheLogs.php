@@ -15,7 +15,10 @@
 class QueryApacheLogs
 {
 
-    const QUERY_STRING = '127.0.0.1:9200/apache_logs';
+    const INDEX_NAME = 'apache_logs';
+    const ELASTIC_ENDPOINT = '127.0.0.1:9200';
+    public $base_url;
+
     public $total_logs;
     public $min_log_timestamp;
     public $max_log_timestamp;
@@ -27,13 +30,15 @@ class QueryApacheLogs
     public $request_time_buckets;
 
 
+
+
     /**
      * sends request to url with optional data param
      * @param $url - elasticsearch end point
      * @param bool|false $datastring use to set post data for request
      * @return array json_decoded array
      */
-    private function queryElastic($url, $datastring = false )
+    public function queryElastic($url, $datastring = false )
     {
 
         $ch = curl_init();
@@ -54,6 +59,7 @@ class QueryApacheLogs
      */
     public function __construct() {
 
+        $this->base_url = self::ELASTIC_ENDPOINT . '/' .self::INDEX_NAME ;
 
         $this->clearCache();
 
@@ -101,7 +107,7 @@ class QueryApacheLogs
     /**
      * @return float
      */
-    private function calculateRate($total_metric)
+    public function calculateRate($total_metric)
     {
         if ($this->total_number_of_minutes > 0) {
             return round($total_metric /  $this->total_number_of_minutes, 3);
@@ -118,7 +124,7 @@ class QueryApacheLogs
      */
     private function clearCache()
     {
-        $url = self::QUERY_STRING . '/_cache/clear';
+        $url = $this->base_url . '/_cache/clear';
         $this->queryElastic($url);
         return true;
     }
@@ -130,7 +136,7 @@ class QueryApacheLogs
      */
     private function setMinLogTimestamp ()
     {
-        $url = self::QUERY_STRING . "/_search?search_type=count&?pretty";
+        $url = $this->base_url . "/_search?search_type=count&?pretty";
         $datastring = '{
                         "aggs" : {
                                   "min_date" : { "min" : { "field" : "@timestamp" } }
@@ -149,7 +155,7 @@ class QueryApacheLogs
     private function setMaxLogTimestamp ()
     {
 
-        $url = self::QUERY_STRING . "/_search?search_type=count&?pretty";
+        $url = $this->base_url . "/_search?search_type=count&?pretty";
         $datastring = '{
                         "aggs" : {
                             "max_date" : { "max" : { "field" : "@timestamp" } }
@@ -178,7 +184,7 @@ class QueryApacheLogs
      */
     private function setTotalSuccessfulRequests()
     {
-        $url = self::QUERY_STRING . "/_search?pretty&search_type=count&q=response:2**";
+        $url = $this->base_url . "/_search?pretty&search_type=count&q=response:2**";
         $result = $this->queryElastic($url);
         $this->total_successful_requests = $result->hits->total;
 
@@ -190,11 +196,11 @@ class QueryApacheLogs
      */
     private function setTotalUnSuccessfulRequests()
     {
-        $url = self::QUERY_STRING . "/_search?pretty&search_type=count&q=response:4**";
+        $url = $this->base_url . "/_search?pretty&search_type=count&q=response:4**";
         $result = $this->queryElastic($url);
         $this->total_unsuccessful_requests = $result->hits->total;
 
-        $url = self::QUERY_STRING . "/_search?pretty&search_type=count&q=response:5**";
+        $url = $this->base_url . "/_search?pretty&search_type=count&q=response:5**";
         $result = $this->queryElastic($url);
         $this->total_unsuccessful_requests += $result->hits->total;
 
@@ -208,7 +214,7 @@ class QueryApacheLogs
      */
     private function getTotalBytesSent ()
     {
-        $url = self::QUERY_STRING . "/_search?search_type=count&?pretty";
+        $url = $this->base_url . "/_search?search_type=count&?pretty";
         $datastring = '{
                         "aggs" : {
                                   "total_bytes" : { "sum" : { "field" : "bytes" } }
@@ -219,7 +225,7 @@ class QueryApacheLogs
         $total_bytes_sent = $result->aggregations->total_bytes->value;
 
         //value is in bytes so need convert to megabytes
-        $this->total_megabytes_sent  = number_format($total_bytes_sent/1048576,1);
+        $this->total_megabytes_sent  = round($total_bytes_sent/1048576,1);
 
         return true;
 
@@ -233,7 +239,7 @@ class QueryApacheLogs
     private function getMeanResponseTimePerMinute ()
     {
 
-        $url = self::QUERY_STRING . "/_search?search_type=count&?pretty";
+        $url = $this->base_url . "/_search?search_type=count&?pretty";
 
         $datastring = '{
                         "aggs" : {
@@ -268,6 +274,3 @@ class QueryApacheLogs
 
 date_default_timezone_set('Europe/London');
 error_reporting(E_ERROR);//not got time for warnings right now :)
-
-$QueryApacheLogs = new QueryApacheLogs();
-$QueryApacheLogs->EmitMetrics();

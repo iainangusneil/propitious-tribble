@@ -1,0 +1,7 @@
+PHPUnit 4.7.6 by Sebastian Bergmann and contributors.
+
+.........
+
+Time: 749 ms, Memory: 12.50Mb
+
+OK (9 tests, 11 assertions)
