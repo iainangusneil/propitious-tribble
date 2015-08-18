@@ -1,4 +1,4 @@
-# loquacious-octo-kumquat - repo name
+# Apache log analyser
 
 Assignment:
 
@@ -8,7 +8,7 @@ The metrics requested would be easily visualised using a tool such as R, kibana 
 I chose php to query the index as I'm most familiar with its testing framework phpunit. I initially set out to find the averages but decided to include the breakdown per minute as well.
 
 
-Inventory:
+<h3>Inventory</h3>
 README            - This file outlining process used
 
 logstash.conf           - The file used to tell logstash how to expect logs to come in, how to deal with the logs and where to send them
@@ -34,8 +34,8 @@ ANSWER                  - the output from the php script containing answers to t
 
 
 
-To Reproduce:
-In order to get this working locally. The following steps had to be carried out. This assumes brew is installed and a recent version of Java and Ruby
+<h3>To Reproduce</h3>
+In order to get this working on OSX. The following steps had to be carried out. This assumes brew is installed and a recent version of Java and Ruby
 
 $ brew update
 
@@ -50,4 +50,8 @@ $ cd path_to_checked_out_code
 $ ./run_logstash.sh
 
 $ php EmitMetrics.php
+
+$ brew install homebrew/php/phpunit
+
+$ phpunit QueryApacheLogs_TEST.php
 
