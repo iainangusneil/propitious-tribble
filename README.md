@@ -27,7 +27,7 @@ grokparsefailures       - The file contains a list of log messages which weren't
                           or create additional filters to catch all logs. incidentally, in order to keep parse failures out of the main index they have been offloaded
                           to a separate index. This would help in the effort to find and fix all grok parse failures in a production environment.
 
-ANSWER                  - the output from the php script containing answers to the questions in the assignment in a verbose fashion
+ANSWER                  - the output from the php script containing answers to the questions in the assignment in a verbose fashion. Answer is currently not 100% accurate as there is ~8000 logs failing grok parsing
 
 
 
