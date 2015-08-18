@@ -1,7 +1,7 @@
 1. Average successful requests per minute = 1006.392
 
 BreakDown:
-Minute 		 		number of successful requests
+Minute 		 number of successful requests
 2015-03-30 05:04 	 834
 2015-03-30 05:05 	 830
 2015-03-30 05:06 	 867
@@ -315,7 +315,7 @@ Minute 		 		number of successful requests
 2. Average unsuccessful requests per minute = 2.344
 
 BreakDown:
-Minute 		 		number of Unsuccessful requests
+Minute 		 number of Unsuccessful requests
 2015-03-30 05:04 	 2
 2015-03-30 05:05 	 2
 2015-03-30 05:06 	 2
@@ -629,7 +629,7 @@ Minute 		 		number of Unsuccessful requests
 3. Average response time per minute = 371112.7227 ms
 
 BreakDown:
- Minute 			average_response_time in milliseconds
+ Minute 		 average_response_time in milliseconds
 2015-03-30 05:04 	 376209.859
 2015-03-30 05:05 	 308740.337
 2015-03-30 05:06 	 296125.902
