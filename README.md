@@ -3,9 +3,10 @@
 Assignment:
 
 The approach taken here was to parse the logfile with logstash and pass off the structured logs to elasticsearch for indexing and then querying the data with a php script.
-Logstash was chosen as its an ideal candidate for this kind of job with its powerful grok matching and it integrates nicely with elasticsearch. It did not escape my notice
-that the kind of metrics requested would be easily visualised using a tool such as kibana or statsD. However this is perhaps outwith the scope of the question.
-I chose php to query the index due to my familiarity with it and of the testing framework phpUnit.
+Logstash was chosen as its an ideal candidate for this kind of job with its powerful grok matching and it integrates nicely with elasticsearch.
+The metrics requested would be easily visualised using a tool such as R, kibana or Graphite. However this is perhaps outwith the scope of the question.
+I chose php to query the index as I'm most familiar with its testing framework phpunit. I initially set out to find the averages but decided to include the breakdown per minute as well.
+
 
 Inventory:
 README            - This file outlining process used

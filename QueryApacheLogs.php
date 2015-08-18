@@ -23,9 +23,15 @@ class QueryApacheLogs
     public $min_log_timestamp;
     public $max_log_timestamp;
     public $total_number_of_minutes;
+
     public $total_successful_requests;
+    public $success_time_buckets;
+
     public $total_unsuccessful_requests;
+    public $no_success_time_buckets;
+
     public $total_megabytes_sent;
+    public $bytes_sent_buckets;
 
     public $request_time_buckets;
 
@@ -70,10 +76,20 @@ class QueryApacheLogs
 
 
         //tackle the four metrics
+        //1
         $this->setTotalSuccessfulRequests();
+        $this->getTotalSuccessfulRequestsByMinute();
+
+        //2
         $this->setTotalUnSuccessfulRequests();
+        $this->getTotalUnSuccessfulRequestsByMinute();
+
+        //3
         $this->getMeanResponseTimePerMinute();
+
+        //4
         $this->getTotalBytesSent();
+        $this->getTotalBytesSentRequestsByMinute();
 
         return true;
 
@@ -85,19 +101,45 @@ class QueryApacheLogs
      */
     public function EmitMetrics()
     {
+        /**
+         * Metric 1
+         */
         $successfulRequestRate = $this->calculateRate($this->total_successful_requests);
-        echo "\n1. Successful requests per minute = ". $successfulRequestRate  . "\n\n";
+        echo "\n1. Average successful requests per minute = ". $successfulRequestRate  . "\n\nBreakDown:\n";
+        echo "Minute \t\t number of successful requests"  . PHP_EOL;
+        foreach ($this->success_time_buckets as $time => $successful) {
+            echo "$time \t $successful" . PHP_EOL;
+        }
 
+        /**
+         * Metric 2
+         */
         $unSuccessfulRequestRate = $this->calculateRate($this->total_unsuccessful_requests);
-        echo "2. Unsuccessful requests per minute = ". $unSuccessfulRequestRate   . "\n\n";
+        echo "\n\n2. Average unsuccessful requests per minute = ". $unSuccessfulRequestRate   . "\n\nBreakDown:\n";
+        echo "Minute \t\t number of Unsuccessful requests"  . PHP_EOL;
+        foreach ($this->no_success_time_buckets as $time => $unsuccessful) {
+            echo "$time \t $unsuccessful" . PHP_EOL;
+        }
 
-        echo "3. Minute \t\t average_request_time in milliseconds"  . PHP_EOL;
+        /**
+         * Metric 3
+         */
+        $average_response_time = round(array_sum(array_values($this->request_time_buckets)) / count($this->request_time_buckets), 4);
+        echo "\n\n3. Average response time per minute = ". $average_response_time   . " ms \n\nBreakDown:\n";
+        echo " Minute \t\t average_response_time in milliseconds"  . PHP_EOL;
         foreach ($this->request_time_buckets as $time => $avg_request_time) {
             echo "$time \t $avg_request_time" . PHP_EOL;
         }
 
-        $unSuccessfulRequestRate = $this->calculateRate($this->total_megabytes_sent);
-        echo "\n\n4. Megabytes per minute = ". $unSuccessfulRequestRate  . "\n\n";
+        /**
+         * Metric 4
+         */
+        $megabytesSent = $this->calculateRate($this->total_megabytes_sent);
+        echo "\n\n4. Average megabytes per minute = ". $megabytesSent    . " M\n\nBreakDown:\n";
+        echo "Minute \t\t number of Megabytes sent"  . PHP_EOL;
+        foreach ($this->bytes_sent_buckets as $time => $bytes_sent) {
+            echo "$time \t $bytes_sent" . PHP_EOL;
+        }
 
         return true;
 
@@ -196,13 +238,9 @@ class QueryApacheLogs
      */
     private function setTotalUnSuccessfulRequests()
     {
-        $url = $this->base_url . "/_search?pretty&search_type=count&q=response:4**";
+        $url = $this->base_url . "/_search?pretty&search_type=count&q=response:4**&q=response:5**";
         $result = $this->queryElastic($url);
         $this->total_unsuccessful_requests = $result->hits->total;
-
-        $url = $this->base_url . "/_search?pretty&search_type=count&q=response:5**";
-        $result = $this->queryElastic($url);
-        $this->total_unsuccessful_requests += $result->hits->total;
 
         return true;
 
@@ -264,6 +302,90 @@ class QueryApacheLogs
         }
 
         $this->request_time_buckets = $buckets;
+        return true;
+    }
+
+
+    private function getTotalSuccessfulRequestsByMinute() {
+
+        $url = $this->base_url . "/_search?pretty&search_type=count&q=response:2**";
+
+        $datastring = '{
+                        "aggs" : {
+                                 "group_by_minute" : {
+                                        "date_histogram" : {
+                                            "field" : "@timestamp",
+                                            "interval" : "minute"
+                                        }
+                                 }
+                        }
+        }';
+
+        $buckets = array();
+        $result = $this->queryElastic($url, $datastring);
+        foreach ($result->aggregations->group_by_minute->buckets as $bucket) {
+            $minute = date('Y-m-d H:i', strtotime($bucket->key_as_string));
+            $buckets[$minute] = $bucket->doc_count;
+        }
+
+        $this->success_time_buckets = $buckets;
+        return true;
+    }
+
+    private function getTotalUnSuccessfulRequestsByMinute() {
+
+        $url = $this->base_url . "/_search?pretty&search_type=count&q=response:4**&q=response:5**";
+
+        $datastring = '{
+                        "aggs" : {
+                                 "group_by_minute" : {
+                                        "date_histogram" : {
+                                            "field" : "@timestamp",
+                                            "interval" : "minute"
+                                        }
+                                 }
+                        }
+        }';
+
+        $buckets = array();
+        $result = $this->queryElastic($url, $datastring);
+        foreach ($result->aggregations->group_by_minute->buckets as $bucket) {
+            $minute = date('Y-m-d H:i', strtotime($bucket->key_as_string));
+            $buckets[$minute] = $bucket->doc_count;
+        }
+
+        $this->no_success_time_buckets = $buckets;
+        return true;
+    }
+
+
+    private function getTotalBytesSentRequestsByMinute() {
+
+        $url = $this->base_url . "/_search?pretty&search_type=count";
+
+        $datastring = '{
+                        "aggs" : {
+                                 "group_by_minute" : {
+                                        "date_histogram" : {
+                                            "field" : "@timestamp",
+                                            "interval" : "minute"
+                                        },
+                                        "aggs" : {
+                                            "total_bytes" : { "sum" : { "field" : "bytes" } }
+                                        }
+
+                                 }
+                        }
+        }';
+
+        $buckets = array();
+        $result = $this->queryElastic($url, $datastring);
+        foreach ($result->aggregations->group_by_minute->buckets as $bucket) {
+            $minute = date('Y-m-d H:i', strtotime($bucket->key_as_string));
+            $buckets[$minute] = round($bucket->total_bytes->value/1048576,4);
+        }
+
+        $this->bytes_sent_buckets = $buckets;
         return true;
     }
 

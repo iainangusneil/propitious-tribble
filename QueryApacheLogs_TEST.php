@@ -59,12 +59,22 @@ class QueryApacheLogs_TEST extends PHPUnit_Framework_TestCase {
         $this->assertTrue(is_array($this->Subject->request_time_buckets));
     }
 
+
     public function testBucketSpansMinToMax() {
+       $this->BucketSpansMinToMax($this->Subject->success_time_buckets);
+       $this->BucketSpansMinToMax($this->Subject->no_success_time_buckets);
+       $this->BucketSpansMinToMax($this->Subject->request_time_buckets);
+       $this->BucketSpansMinToMax($this->Subject->bytes_sent_buckets);
+    }
+
+    public function BucketSpansMinToMax($bucket) {
         $min_time =  date('Y-m-d H:i', $this->Subject->min_log_timestamp);
-        $this->assertArrayHasKey($min_time, $this->Subject->request_time_buckets);
+        $this->assertArrayHasKey($min_time,$bucket);
 
         $max_time =  date('Y-m-d H:i', $this->Subject->max_log_timestamp);
-        $this->assertArrayHasKey($max_time, $this->Subject->request_time_buckets);
+        $this->assertArrayHasKey($max_time, $bucket);
+
     }
+
 
 }
