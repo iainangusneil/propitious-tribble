@@ -1,8 +1,14 @@
+
+
+#this grok pattern seems to work for the following test case on grok debugger but not in logstash. hmm?
+%{IPORHOST:clientip} - %{USER:ident}?-%{USER:auth}? \[%{HTTPDATE:request_timestamp}\] \\\"%{WORD:word} \* HTTP/%{NUMBER:httpversion}\\\" %{NUMBER:response} - %{NUMBER:microseconds}
+::1 - - [30/Mar/2015:10:07:10 +0100] \"OPTIONS * HTTP/1.0\" 200 - 93
+
+
+
+#matched on grok_debugger >:/?
+%{IPORHOST:clientip} - %{USER:ident}?-%{USER:auth}? \[%{HTTPDATE:request_timestamp}\] \\\"%{WORD:verb} %{NOTSPACE:url} HTTP/%{NUMBER:httpversion}\\\" %{NUMBER:response} %{NUMBER:bytes} %{NUMBER:microseconds}
 127.0.0.1 - - [30/Mar/2015:10:11:51 +0100] \"GET /render?from=-24hours&until=-1mins&width=720&height=240&target=groupByNode(collector.*.fun.*1.pc.asp_net.noinstance.request_execution_time.number_of_items32,1,%22maxSeries%22)&yMin=0&yMax=25&hideLegend=false&target=alias(drawAsInfinite(events(\\\"MET-ReleaseEvent-Skyscanner.FlightSearch.Web\\\")),\\\"FSS_Release\\\") HTTP/1.1\" 200 88584 224092
 127.0.0.1 - - [30/Mar/2015:06:06:19 +0200] \"GET /render?from=-7day&until=now&width=1460&height=340&lineMode=connected&drawNullAsZero=true&lineWidth=2&target=mostDeviant(5%2CnonNegativeDerivative(collector.*.fun.*.meta.metrics.count))&target=alias(drawAsInfinite(events(\\\"MET-ReleaseEvent-Skyscanner.FlightSearch.Web\\\")),\\\"FSS_Release\\\") HTTP/1.1\" 200 42859 1614574
 
 
-
-#this grok pattern seems to work for the following test case on grok debug but not in logstash. hmm?
-%{IPORHOST:clientip} - %{USER:ident}?-%{USER:auth}? \[%{HTTPDATE:request_timestamp}\] \\\"%{WORD:word} \* HTTP/%{NUMBER:httpversion}\\\" %{NUMBER:response} - %{NUMBER:microseconds}
-::1 - - [30/Mar/2015:10:07:10 +0100] \"OPTIONS * HTTP/1.0\" 200 - 93
