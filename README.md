@@ -48,5 +48,5 @@ $ cd path_to_checked_out_code
 
 $ ./run_logstash.sh
 
-$ php query_elastic.php
+$ php EmitMetrics.php
 
